@@ -1,57 +1,152 @@
-uap-core [![Build Status](https://secure.travis-ci.org/ua-parser/uap-core.svg?branch=master)](https://travis-ci.org/ua-parser/uap-core) [![Backers on Open Collective](https://opencollective.com/ua-parser/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/ua-parser/sponsors/badge.svg)](#sponsors) 
-========
+# aria-api
 
-This repository contains the core of [BrowserScope][2]'s original [user agent string parser][3]: data collected over the years by [Steve Souders][4] and numerous other contributors, extracted into a separate [YAML file][5] so as to be reusable _as is_ by implementations in any programming language.
+[WAI-ARIA](https://www.w3.org/TR/wai-aria/) allows websites to provide
+additional semantics to assistive technologies. Roles and attributes can be set
+either explicitly (e.g. `<span role="link">click me</span>`) or implicitly
+(`<a href="//example.com">click me</a>` implicitly has the role "link").
 
-This repo itself does _not_ contain a parser: only the necessary data to build one. There exists a ref implementation, along with multiple, production-ready implementations in various programming languages.
+While the implicit mappings make authoring accessible websites simpler, it
+makes the task of calculating an element's role and attributes more
+complicated. This library takes care of exactly that.
 
-Maintainers
------------
+## Install
 
-* [Com Menthol](https://github.com/commenthol)
-* [Lindsey Simon](https://github.com/elsigh) ([@elsigh](https://twitter.com/elsigh))
-* [Tobie Langel](https://github.com/tobie) ([@tobie](https://twitter.com/tobie))
+    npm install aria-api
 
-Communication channels
------------------------
+This installation method works best if you use tools like webpack or
+browserify. There is also an UMD build included as `dist/aria.js`.
 
-* \#ua-parser on freenode <irc://chat.freenode.net#ua-parser>
-* [mailing list](https://groups.google.com/forum/#!forum/ua-parser)
+# Usage
 
-Contributing Changes to regexes.yaml
-------------------------------------
+    var aria = require('aria-api'):
 
-Please read the [contributors' guide](CONTRIBUTING.md)
+    aria.querySelector('landmark').forEach(landmark => {
+        if (!aria.matches(landmark, ':hidden')) {
+            var role = aria.getRole(landmark);
+            var name = aria.getName(landmark);
+            console.log(role, name);
+        }
+    });
 
-## Credits
-### Contributors
+## getRole(element)
 
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
-<img src="https://opencollective.com/ua-parser/contributors.svg?width=890&button=false" />
+Calculate an element's role.
 
+Note that this will return only the most specific role. If you want to know
+whether an element *has* a role, use `matches()` instead.
 
-### Backers
+## getAttribute(element, attribute)
 
-Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/ua-parser#backer)]
+Calculate the value of an element's attribute (state or property). The
+"aria-" prefix is not included in the attribute name.
 
-<a href="https://opencollective.com/ua-parser#backers" target="_blank"><img src="https://opencollective.com/ua-parser/backers.svg?width=890"></a>
+## getName(element)
 
+Calculate an element's name according to the [Accessible Name and Description
+Computation](https://www.w3.org/TR/accname-aam-1.1/#mapping_additional_nd_te).
 
-### Sponsors
+## getDescription(element)
 
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/ua-parser#sponsor)]
+Calculate an element's description according to the [Accessible Name and
+Description Computation](https://www.w3.org/TR/accname-aam-1.1/#mapping_additional_nd_te).
 
-<a href="https://opencollective.com/ua-parser/sponsor/0/website" target="_blank"><img src="https://opencollective.com/ua-parser/sponsor/0/avatar.svg"></a>
+## matches(element, selector)
 
+Similar to [Element.matches()](https://developer.mozilla.org/en-US/docs/Web/API/Element/matches),
+this allows to check whether an element matches a selector. A selector can be
+any of the following:
 
+-   `role`: Matches if the element has the specified role. This also works for
+    hierarchical roles such as "landmark".
+-   `:attribute`: Matches if the attribute is truthy. The "aria-" prefix is not
+    included in the attribute name.
+-   `[attribute="value"]`: Matches if the value of the attribute converted to
+    string equals the specified value.
 
-License
--------
+Note that combinations of selectors are **not supported** (e.g. `main link`,
+`link:hidden`, `:not(:hidden)`).  The single exception to this rule are
+comma-separated lists of roles, e.g. `link,button`.
 
-The data contained in `regexes.yaml` is Copyright 2009 Google Inc. and available under the [Apache License, Version 2.0][6].
+## querySelector(element, selector)
 
-[2]: http://www.browserscope.org
-[3]: http://code.google.com/p/ua-parser/
-[4]: http://stevesouders.com/
-[5]: https://raw.github.com/ua-parser/uap-core/master/regexes.yaml
-[6]: http://www.apache.org/licenses/LICENSE-2.0
+Similar to [Element.querySelector()](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector).
+See `matches()` for details.
+
+## querySelectorAll(element, selector)
+
+Similar to [Element.querySelectorAll()](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll).
+See `matches()` for details.
+
+## closest(element, selector)
+
+Similar to [Element.closest()](https://developer.mozilla.org/en-US/docs/Web/API/Element/closest).
+See `matches()` for details.
+
+## getParentNode(node)
+
+Similar to [Node.parentNode](https://developer.mozilla.org/en-US/docs/Web/API/Node/parentNode),
+but takes `aria-owns` into account.
+
+## getChildNodes(node)
+
+Similar to [Node.childNodes](https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes),
+but takes `aria-owns` into account.
+
+# What is this for?
+
+First of all, I thought that something like this should exist. I currently use
+it for [a11y-outline](https://github.com/xi/a11y-outline/), a web extension
+that generates outlines based on WAI-ARIA roles.
+
+That said, this is what I think it could also be used for:
+
+-   Providing features based on the additional information provided by ARIA,
+    e.g. landmark navigation.
+-   Tools helping developers with improving accessibility.
+
+# Implemented standards
+
+-   [Accessible Rich Internet Applications 1.1](https://www.w3.org/TR/wai-aria-1.1/)
+-   [Core Accessibility API Mappings 1.1](https://www.w3.org/TR/core-aam-1.1/)
+-   [HTML Accessibility API Mappings 1.0](https://www.w3.org/TR/html-aam-1.0/)
+-   [WAI-ARIA Graphics Module 1.0](https://www.w3.org/TR/graphics-aria-1.0/)
+-   [Digital Publishing WAI-ARIA Module 1.0](https://www.w3.org/TR/dpub-aria-1.0/)
+-   [Accessible Name and Description Computation 1.1](https://www.w3.org/TR/accname-1.1/)
+
+I try to update the code whenever a new version of these specs becomes a
+recommendation.
+
+# Notes
+
+-   This is a pet project. I do not have the time to do extensive testing and
+    may skip some details now and then. I am happy to receive bug reports and
+    pull requests though.
+-   The standards are still in a very rough state. Many things are
+    unclear/undecided and therefore no browser really implements them. So
+    naturally, this library cannot really implement the standards either.
+-   This library does not do any validity checks. Invalid attributes or roles
+    will not produce any warnings.
+-   In order to calculate the "hidden" attribute,
+    [Window.getComputedStyle()](https://developer.mozilla.org/en-US/docs/Web/API/Window/getComputedStyle)
+    is called. This only seems to return reliable values if the element is
+    attached to `document`.
+-   Due to security restrictions it is not generally possible to inspect the
+    content of iframes, so they are ignored.
+
+# Related projects
+
+-   [Visual ARIA Bookmarklet](http://whatsock.com/training/matrices/visual-aria.htm):
+    Displays role, name, and description in any website. Maintained by one of
+    the editors of the [accname]() spec.
+-   [axe-core](https://github.com/dequelabs/axe-core/) and
+    [Accessibility Developer Tools](https://github.com/GoogleChrome/accessibility-developer-tools):
+    These are libraries for accessibility testing. They solve many of the same
+    issues as this library internally.
+-   [ARIA Query](https://github.com/A11yance/aria-query):
+    Information from the ARIA spec as JavaScript structures.
+-   [Accessibility Object Model](https://wicg.github.io/aom/):
+    Draft spec for exposing the accessibility tree to JavaScript.
+-   [chrome.automation](https://developer.chrome.com/extensions/automation):
+    A propriatary API that exposes the accessibility tree to JavaScript.
+-   [babelacc](https://xi.github.io/babelacc/):
+    A tool to compare the output of different libraries.
