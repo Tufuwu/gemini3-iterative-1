@@ -1,30 +1,8 @@
-# macOS
-*.DS_Store
-
-# API credentials
-*.ini
-
-# May not want to commit lyrics text files
-*.txt
-*.json
-
-# Jupyter
-/Notebooks
-.ipynb_checkpoints/
-*.ipynb
-
-# Test files
-.cache/
-.tox
-lyricsgenius.egg-info
-fixtures
-
-# Python module things
-*.pyc
-
-# Python cache stuff
-*.egg-info
-__pycache__
+.idea
+*.iml
 dist
 build
-.idea
+*.pyc
+.eggs
+*.egg-info
+.cache

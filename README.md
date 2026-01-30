@@ -1,127 +1,258 @@
-# LyricsGenius: a Python client for the Genius.com API
-[![Build Status](https://travis-ci.org/johnwmillr/LyricsGenius.svg?branch=master)](https://travis-ci.org/johnwmillr/LyricsGenius)
-[![Documentation Status](https://readthedocs.org/projects/lyricsgenius/badge/?version=master)](https://lyricsgenius.readthedocs.io/en/latest/?badge=master)
-[![PyPI version](https://badge.fury.io/py/lyricsgenius.svg)](https://pypi.org/project/lyricsgenius/)
-[![Python version](https://img.shields.io/badge/python-3.x-brightgreen.svg)](https://pypi.org/project/lyricsgenius/)
+[![Build Status](https://travis-ci.org/edio/randrctl.svg?branch=master)](https://travis-ci.org/edio/randrctl)
 
-`lyricsgenius` provides a simple interface to the song, artist, and lyrics data stored on [Genius.com](https://www.genius.com).
+# randrctl
 
-The full documentation for `lyricsgenius` is available online at [Read the Docs](https://lyricsgenius.readthedocs.io/en/master/).
+Screen profiles manager for X.org.
 
-## Setup
-Before using this package you'll need to sign up for a (free) account that authorizes access to [the Genius API](http://genius.com/api-clients). The Genius account provides a `access_token` that is required by the package. See the [Usage section](https://github.com/johnwmillr/LyricsGenius#usage) below for examples.
-
-## Installation
-`lyricsgenius` requires Python 3.
-
-Use `pip` to install the package from PyPI:
-
-```bash
-pip install lyricsgenius
+_randrctl_ remembers your X.org screen configurations (position of displays, rotation, scaling, etc.) and switches
+between them automatically as displays are connected or manually, when necessary:
+```
+randrctl switch-to home
+randrctl switch-to office
 ```
 
-Or, install the latest version of the package from GitHub:
+## Install
 
-```bash
-pip install git+https://github.com/johnwmillr/LyricsGenius.git
+_randrctl_ depends on `xrandr` utility and won't work without it. Please install it first.
+
+### Archlinux
+
+https://aur.archlinux.org/packages/randrctl-git/
+https://aur.archlinux.org/packages/randrctl/
+
+```
+$ randrctl setup config > ${XDG_CONFIG_HOME:-$HOME/.config}/randrctl/config.yaml
+```
+
+### PyPi
+
+```
+# pip install randrctl
+
+# randrctl setup udev > /etc/udev/rules.d/99-randrctl.rules
+# randrctl setup completion > /usr/share/bash-completion/completions/randrctl
+
+$ randrctl setup config > ${XDG_CONFIG_HOME:-$HOME/.config}/randrctl/config.yaml
+```
+
+### Manually from sources
+
+```
+$ git clone https://github.com/edio/randrctl.git
+$ cd randrctl
+
+# python setup.py install
+
+# randrctl setup udev > /etc/udev/rules.d/99-randrctl.rules
+# randrctl setup completion > /usr/share/bash-completion/completions/randrctl
+
+$ randrctl setup config > ${XDG_CONFIG_HOME:-$HOME/.config}/randrctl/config.yaml
 ```
 
 ## Usage
-Import the package and initiate Genius:
 
-```python
-import lyricsgenius
-genius = lyricsgenius.Genius(token)
+Usage is very simple:
+
+0. Setup your screen to suit your needs (randrctl does not handle that)
+
+1. Dump settings with randrctl to a named profile
+
+  ```randrctl dump -e home```
+
+2. Re-apply those settings, whenever you need them
+
+  ```randrctl switch-to home```
+
+3. ... or let randrctl to inspect currently connected displays and choose profile that fits them best
+
+  ```randrctl auto```
+
+  Auto-switching will also happen automatically if provided udev rules are installed to the system.
+  
+4. For more info on usage refer to help
+
+  ```randrctl --help```
+
+### Auto-switching<a name="auto"></a>
+
+```randrctl``` can associate profile with currently connected displays and switch to this profile automatically whenever
+same (or similar) set of displays is connected.
+
+Profile is matched to the set of connected displays by evaluating one or more of the following rules for every connected
+display:
+
+* list of supported modes of connected display includes the current mode
+
+  ```randrctl dump -m profile1```
+
+  You can use this to create profile that is activated whenever connected display supports the mode that is currently
+  set for that output.
+
+* preferred mode of connected display is the current mode
+
+  ```randrctl dump -p profile2```
+
+  Display can support wide range of modes from 640x480 to 1920x1200, but prefer only one of those. When dumped this way,
+  profile is considered a match if connected display prefers the mode, that is currently set for it.
+
+* unique identifier of connected display is exactly tha same
+
+  ```randrctl dump -e profile3```
+
+  Unique identifier (edid) of every display is dumped with the profile, so it matches, only if exactly same displays
+  are connected.
+
+Naturally, the more specific the rule, the bigger weight it has, so in case if you invoked those 3 dump commands above
+with the same displays connected, `profile3` will be chosen as the best (i.e. the most specific) match.
+
+It is possible to specify any combination of `-m -p -e` keys to dump command. In this case randrctl will try to match
+all the rules combining them with logical AND (for example, display must support and at the same time prefer the mode).
+Although such combination of rules might seem redundant (because if the more specific rule matches, the more generic
+will do too), it might have sense if rule is edited manually.
+
+If `randrctl dump` is invoked without additional options, it dumps only screen setup, so profile won't be considered
+during auto-switching.
+
+
+### Prior/Post hooks
+
+randrctl can execute custom commands (hooks) before and after switching to profile or if switching fails. Hooks are
+specified in config file `$XDG_CONFIG_HOME/randrctl/config.yaml`
+
+```
+hooks:
+    prior_switch: /usr/bin/killall -SIGSTOP i3
+    post_switch: /usr/bin/killall -SIGCONT i3 && /usr/bin/notify-send -u low "randrctl" "switched to $randr_profile"
+    post_fail: /usr/bin/killall -SIGCONT i3 && /usr/bin/notify-send -u critical "randrctl error" "$randr_error"
 ```
 
-If you don't pass a token to the `Genius` class, `lyricsgenus` will look for an environment variable called `GENIUS_ACCESS_TOKEN` and attempt to use that for authentication.
+The typical use-case of this is displaying desktop notification with libnotify.
 
-```python
-genius = Genius()
+I also use it to pause i3 window manager as it was known to crash sometimes during the switch.
+
+
+### Profile format
+
+Profile is a simple text file in YAML format. It can be edited manually, however it is rarely required in practice
+because `randrctl dump` handles most common cases.
+
+```
+match:
+    LVDS1: {}
+    DP1:
+        prefers: 1920x1080
+outputs:
+    LVDS1:
+        mode: 1366x768
+        panning: 1366x1080
+    DP1:
+        mode: 1920x1080
+        pos: 1366x0
+        rotate: inverted
+primary: DP1
 ```
 
-Search for songs by a given artist:
+Profile is required to contain 2 sections (`outputs` and `primary`). That is what dumped when `randrctl dump` is invoked
+without additional options.
 
-```python
-artist = genius.search_artist("Andy Shauf", max_songs=3, sort="title")
-print(artist.songs)
+The `match` section is optional and is dumped only when one of the auto-switching rules is specified.
+
+
+#### Outputs
+
+Each property of `outputs` section references output as seen in xrandr (i.e. *DP1*, *HDMI2*, etc.). Meaning of the
+properties is the same as in the xrandr utility.
+
+`mode` is mandatory, the others may be omitted.
+
 ```
-By default, the `search_artist()` only returns songs where the given artist is the primary artist.
-However, there may be instances where it is desirable to get all of the songs that the artist appears on.
-You can do this by setting the `include_features` argument to `True`.
-
-```python
-artist = genius.search_artist("Andy Shauf", max_songs=3, sort="title", include_features=True)
-print(artist.songs)
-```
-
-Search for a single song by the same artist:
-
-```python
-song = artist.song("To You")
-# or:
-# song = genius.search_song("To You", artist.name)
-print(song.lyrics)
-```
-
-Add the song to the artist object:
-
-```python
-artist.add_song(song)
-# the Artist object also accepts song names:
-# artist.add_song("To You")
+DP1-2: 
+    mode: 1920x1200
+    panning: 2496x1560+1920+0
+    pos: 1920x0
+    rate: 60
+    rotate: normal
+    scale: 1.3x1.3
 ```
 
-Save the artist's songs to a JSON file:
 
-```python
-artist.save_lyrics()
+#### Primary
+
+Name of the primary output as seen in xrandr.
+
+```
+primary: eDP1
 ```
 
-Searching for an album and saving it:
+#### Match
 
-```python
-album = genius.search_album("The Party", "Andy Shauf")
-album.save_lyrics()
+Set of rules for auto-switching.
+
+The minimum rule is
+
+```
+HDMI1: {}
 ```
 
-There are various options configurable as parameters within the `Genius` class:
+which means, that something must be connected to that output.
 
-```python
-genius.verbose = False # Turn off status messages
-genius.remove_section_headers = True # Remove section headers (e.g. [Chorus]) from lyrics when searching
-genius.skip_non_songs = False # Include hits thought to be non-songs (e.g. track lists)
-genius.excluded_terms = ["(Remix)", "(Live)"] # Exclude songs with these words in their title
+Rule corresponding to `randrctl dump -m` would be
+
+```
+HDMI1:
+    supports: 1920x1080
 ```
 
-You can also call the package from the command line:
+`randrctl dump -p` is
 
-```bash
-export GENIUS_ACCESS_TOKEN="my_access_token_here"
-python3 -m lyricsgenius --help
+```
+HDMI1:
+    prefers: 1920x1080
 ```
 
-Search for and save lyrics to a given song and album:
+and `randrctl dump -e` is
 
-```bash
-python3 -m lyricsgenius song "Begin Again" "Andy Shauf" --save
-python3 -m lyricsgenius album "The Party" "Andy Shauf" --save
+```
+HDMI1:
+    edid: efdbca373951c898c5775e1c9d26c77f
 ```
 
-Search for five songs by 'The Beatles' and save the lyrics:
+`edid` is md5 hash of actual display's `edid`. To obtain that value, use `randrctl show`.
 
-```bash
-python3 -m lyricsgenius artist "The Beatles" --max-songs 5 --save
+As was mentioned, `prefers`, `supports` and `edid` can be combined in the same rule, so it is possible to manually
+create a more sophisticated rule
+
+```
+match:
+    LVDS1: {}
+    HDMI1:
+        prefers: 1600x1200
+        supports: 800x600
+outputs:
+    LVDS1: 
+        ...
+    HDMI1:
+        ...
 ```
 
-## Example projects
+#### Priority
 
-  - [Trucks and Beer: A textual analysis of popular country music](http://www.johnwmillr.com/trucks-and-beer/)
-  - [Neural machine translation: Explaining the Meaning Behind Lyrics](https://github.com/tsandefer/dsi_capstone_3)
-  - [What makes some blink-182 songs more popular than others?](http://jdaytn.com/posts/download-blink-182-data/)
-  - [Sentiment analysis on hip-hop lyrics](https://github.com/Hugo-Nattagh/2017-Hip-Hop)
-  - [Does Country Music Drink More Than Other Genres?](https://towardsdatascience.com/does-country-music-drink-more-than-other-genres-a21db901940b)
-  - [49 Years of Lyrics: Why So Angry?](https://towardsdatascience.com/49-years-of-lyrics-why-so-angry-1adf0a3fa2b4)
+When more than one profile matches current output configuration priority can be used to highlight preferred profile.
+```
+priority: 100
+match:
+    ...
+outputs:
+    ...
+```
+Default priority is `100`. To set profile priority use `-P <priority>` with `dump` command. Like this:
+`randrctl dump -e default -P 50`
 
-## Contributing
-Please contribute! If you want to fix a bug, suggest improvements, or add new features to the project, just [open an issue](https://github.com/johnwmillr/LyricsGenius/issues) or send me a pull request.
+## Develop
+
+### Run tests
+
+```
+$ python setup.py test
+```
+
