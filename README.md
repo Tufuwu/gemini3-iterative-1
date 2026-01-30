@@ -1,120 +1,64 @@
-# LRUD [![Build Status](https://travis-ci.org/bbc/lrud.svg?branch=master)](https://travis-ci.org/bbc/lrud)
+# Intercept Redirect
 
-A spatial navigation library for devices with input via directional controls
+[![Intercept Redirect Logo](https://raw.githubusercontent.com/bjornstar/intercept-redirect/master/assets/icon-300.png)](https://intercept-redirect.bjornstar.com)
 
-## Upgrading from V2
+[![Travis CI](https://travis-ci.org/bjornstar/intercept-redirect.svg?branch=master)](https://travis-ci.org/bjornstar/intercept-redirect)
+[![Appveyor](https://ci.appveyor.com/api/projects/status/9qrj76bt914531gg/branch/master?svg=true)](https://ci.appveyor.com/project/bjornstar/intercept-redirect/branch/master)
+[![CircleCI](https://circleci.com/gh/bjornstar/intercept-redirect/tree/master.svg?style=svg)](https://circleci.com/gh/bjornstar/intercept-redirect/tree/master)
 
-**v3 is a major rewrite, covering many new features. However, it unfortunately breaks some backwards compatibility.**
+[![AMO Badge](https://img.shields.io/amo/v/intercept-redirect)](https://intercept-redirect.firefox.bjornstar.com)
+[![CWS Badge](https://img.shields.io/chrome-web-store/v/kdjmiebhgaleboaamnehjbamlghkoedf)](https://intercept-redirect.chrome.bjornstar.com)
 
-We are currently in the process of writing more detailed docs for an upgrade process. However, the main things to note at the minute at;
+Skip tracking redirects that serve no purpose other than to waste your valuable time.
 
-- changes in events, which ones are emitted and what they are emitted with
-- removal of `grid` in favour of `isIndexAligned` behaviour
+This extension does not modify any of the pages that you visit. Its sole purpose is to intercept network requests intended for redirect services. It requests the bare minimum of access to these domains to protect your privacy and have the best performance.
 
-## Getting Started
+## Supported Domains
+- c212.net
+- *.curseforge.com
+- clickserve.dartsearch.net
+- github-redirect.dependabot.com
+- *.digidip.net
+- disq.us
+- cj.dotomi.com
+- console.ebsta.com
+- redirect.epicgames.com
+- exit.sc
+- facebook.com
+- l.facebook.com
+- lm.facebook.com
+- m.facebook.com
+- gate.sc
+- www.google.co.jp
+- news.url.google.com
+- plus.url.google.com
+- www.google.com
+- www.google.se
+- www.googleadservices.com
+- href.li
+- l.instagram.com
+- www.javlibrary.com
+- r.klar.na
+- www.kraken.com
+- t.lever-analytics.com
+- www.linkedin.com
+- l.messenger.com
+- outgoing.prod.mozaws.net
+- onlyfans.com
+- *.safelinks.protection.outlook.com
+- slack-redir.net
+- steamcommunity.com
+- twitter.com
+- t.umblr.com
+- vk.com
+- workable.com
+- www.youtube.com
 
-```bash
-git clone git@github.com:bbc/lrud.git lrud
-cd lrud
-npm install
-```
+## Installation
 
-Lrud is written in [Typescript](https://www.typescriptlang.org/) and makes use of [mitt](https://github.com/developit/mitt).
+Intercept Redirect is available for the following browsers:
 
-## Usage
-
-```bash
-npm install lrud
-```
-
-```js
-const { Lrud } = require('Lrud')
-
-// create an instance, register some nodes and assign a default focus
-var navigation = new Lrud()
-navigation
-  .registerNode('root', { orientation: 'vertical' })
-  .registerNode('item-a', { parent: 'root', isFocusable: true })
-  .registerNode('item-b', { parent: 'root', isFocusable: true })
-  .assignFocus('item-a')
-
-// handle a key event
-document.addEventListener('keypress', (event) => {
-  navigation.handleKeyEvent(event)
-});
-
-// Lrud will output an event when it handles a move
-navigation.on('move', (moveEvent) => {
-  myApp.doSomethingOnNodeFocus(moveEvent.enter)
-})
-```
-
-See [usage docs](./docs/usage.md) for details full API details.
-
-For more "full" examples, covering common use cases, check [the recipes](./docs/recipes.md)
-
-## Running the tests
-
-All code is written in Typescript, so we make use of a `tsconfig.json` and `jest.config.js` to ensure tests run correctly.
-
-Test files are split up fairly arbitrarily, aiming to have larger sets of tests broken into their own file. 
-
-```bash
-npm test
-```
-
-To run a specific test file, use `npx jest` from the project root.
-
-```bash
-npx jest src/lrud.test.js
-```
-
-You can also run all the tests with verbose output. This is useful for listing out test scenarios to ensure that behaviour is covered.
-
-```bash
-npm run test:verbose
-```
-
-You can also run all the tests with coverage output
-
-```bash
-npm run test:coverage
-```
-
-Several of the tests have associated diagrams, in order to better explain what is being tested. These can be found in `./docs/test-diagrams`.
-
-We also have a specific test file (`src/build.test.js`) in order to ensure that we haven't broken the Typescript/rollup.js build.
-
-## Versioning
-
-```bash
-npm version <patch:minor:major>
-npm publish
-```
-
-## Built with
-
-- [Typescript](https://www.typescriptlang.org/)
-- [rollup.js](https://rollupjs.org/)
-- [mitt](https://github.com/developit/mitt)
-
-## Inspiration
-
-* [BBC - TV Application Layer (TAL)](http://bbc.github.io/tal/widgets/focus-management.html)
-* [Netflix - Pass the Remote](https://medium.com/netflix-techblog/pass-the-remote-user-input-on-tv-devices-923f6920c9a8)
-* [Mozilla - Implementing TV remote control navigation](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox_OS_for_TV/TV_remote_control_navigation)
-
-## Alternatives
-
-* [tal](https://github.com/bbc/tal)
-* [react-tv-navigation](https://github.com/react-tv/react-tv-navigation)
-* [react-key-navigation](https://github.com/dead/react-key-navigation)
-* [js-spatial-navigation](https://github.com/luke-chang/js-spatial-navigation)
-
-# License
-
-
-LRUD is part of the BBC TAL libraries, and available to everyone under the terms of the Apache 2 open source licence (Apache-2.0). Take a look at the LICENSE file in the code.
-
-Copyright (c) 2018 BBC
-
+- Mozilla Firefox - https://intercept-redirect.firefox.bjornstar.com
+- Microsoft Edge - https://intercept-redirect.edge.bjornstar.com
+- Opera - https://intercept-redirect.opera.bjornstar.com
+- Google Chrome - https://intercept-redirect.chrome.bjornstar.com
