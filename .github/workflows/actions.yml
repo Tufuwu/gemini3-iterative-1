@@ -1,52 +1,46 @@
-name: Node.js CI
+name: Node.js CI with LocalStack
 
 on:
   push:
-    branches: [ main, main ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, main ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:9.6
-        env:
-          POSTGRES_DB: sequelize
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Use Node.js
+      - name: Use Node.js 12
         uses: actions/setup-node@v3
         with:
-          # The error occurred because 'latest' resolved to Node 25.x, 
-          # which is incompatible with the older sqlite3/node-pre-gyp versions in the project.
-          # Using Node 20 (LTS) or 18 is recommended for stability with older native modules.
-          node-version: '20'
+          node-version: '12'
           cache: 'npm'
+
+      - name: Start LocalStack
+        run: |
+          docker pull localstack/localstack
+          docker run --rm -d -p 4566:4566 -e SERVICES=lambda,s3,cloudformation,sts localstack/localstack
+          # Wait for LocalStack to be ready
+          timeout 60s bash -c "until curl -s localhost:4566/_localstack/health | grep -q '\"status\": \"running\"'; do sleep 2; done" || true
 
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
-        run: npm test
-
-      - name: Coverage and Coveralls
+      - name: Run lint and unit tests
         run: |
-          ./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly test/overall.test.js -- --exit
-          cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
-          rm -rf ./coverage
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          set -e
+          npm run lint
+          npm run test
+
+      - name: Run integration tests
+        run: |
+          # Ensure serverless is available globally or linked correctly for the shell
+          npm link
+          npm install -g serverless@2
+          sleep 10
+          SLS_DEBUG=* npm run test:integration
 
