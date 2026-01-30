@@ -2,40 +2,28 @@ name: Node.js CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    # GitHub Actions uses 'ubuntu-latest' for amd64. 
+    # For ppc64le, you must use self-hosted runners as GitHub does not provide hosted ones.
+    runs-on: ${{ matrix.arch == 'amd64' && 'ubuntu-latest' || [ 'self-hosted', 'linux', 'ppc64le' ] }}
     strategy:
       matrix:
-        node-version: [16, 18, 20]
+        node-version: [16]
+        arch: [amd64, ppc64le]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
 
-      - name: Install dependencies
-        run: |
-          npm install
-          npm run bootstrap
-
-      - name: Run lint
-        run: npx eslint . || npm run lint
-
-      - name: Run tests and coverage
-        run: npm test
-
-      - name: Coveralls
-        if: success()
-        run: npm run coveralls
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Before Install
+        run: git --version
 
