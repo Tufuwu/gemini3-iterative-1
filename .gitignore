@@ -1,19 +1,22 @@
-*.pyc
-*.sqlite3
-settings_local.py
-settings_local*.py
-.DS_Store
-node_modules
-.idea/
+# Compiled files
+*__pycache__
+*.py[cod]
+build/
+
+# Packaging related files
+*.egg
+*.egg-info
 dist/
-ENV
-venv/
-.vscode/
-jsconfig.json
-airavata_django_portal.egg-info
-# AIRAVATA-2951 package-lock.json files cause the build to fail when deploying to server
-package-lock.json
-# mkdocs
-site/
-.tox/
-yarn-error.log
+
+# Testing files
+.pytest_cache
+.cache
+.tox
+
+# Documentation
+doc/build
+doc/source/_build
+
+# Development files
+Pipfile
+Pipfile.lock
