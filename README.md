@@ -1,71 +1,76 @@
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=misund/hex-to-rgba)](https://dependabot.com)
+# universalify
 
-`hex-to-rgba` turns an old-fashioned css hex color value string into an rgba() string.
+[![Travis branch](https://img.shields.io/travis/RyanZim/universalify/master.svg)](https://travis-ci.org/RyanZim/universalify)
+![Coveralls github branch](https://img.shields.io/coveralls/github/RyanZim/universalify/master.svg)
+![npm](https://img.shields.io/npm/dm/universalify.svg)
+![npm](https://img.shields.io/npm/l/universalify.svg)
 
-Optionally pass in an alpha value. The passed alpha value will override any alpha value from 4- or 8-digit hexes. If you don't pass in an alpha value at all, we will default to an alpha value of 1 (completely opaque).
+Make a callback- or promise-based function support both promises and callbacks.
 
-Supports 3-, 4-, 6- and 8-digit hex values with or without a leading hash.
+Uses the native promise implementation.
 
 ## Installation
-```sh
-$ npm install --save hex-to-rgba
-```
-or
-```sh
-$ yarn add hex-to-rgba
+
+```bash
+npm install universalify
 ```
 
-## Usage
+## API
+
+### `universalify.fromCallback(fn)`
+
+Takes a callback-based function to universalify, and returns the universalified  function.
+
+Function must take a callback as the last parameter that will be called with the signature `(error, result)`. `universalify` does not support calling the callback with three or more arguments, and does not ensure that the callback is only called once.
+
 ```js
-import hexToRgba from 'hex-to-rgba';
+function callbackFn (n, cb) {
+  setTimeout(() => cb(null, n), 15)
+}
 
-// Or if you're so inclined:
-// var hexToRgba = require("hex-to-rgba");
+const fn = universalify.fromCallback(callbackFn)
 
-hexToRgba('112233'); // "rgba(17, 34, 51, 1)"
-hexToRgba('#112233'); // "rgba(17, 34, 51, 1)"
-hexToRgba('112233', '0.5'); // "rgba(17, 34, 51, 0.5)"
-hexToRgba('#112233', 0.75); // "rgba(17, 34, 51, 0.75)"
+// Works with Promises:
+fn('Hello World!')
+.then(result => console.log(result)) // -> Hello World!
+.catch(error => console.error(error))
 
-hexToRgba('11223344') // "rgba(17, 34, 51, 0.27)"
-hexToRgba('#11223344') // "rgba(17, 34, 51, 0.27)"
-hexToRgba('11223344', '0.5') // "rgba(17, 34, 51, 0.5)"
-hexToRgba('#11223344', 0.75) // "rgba(17, 34, 51, 0.75)"
-
-hexToRgba('123'); // "rgba(17, 34, 51, 1)"
-hexToRgba('#123'); // "rgba(17, 34, 51, 1)"
-hexToRgba('123', 0.2) // "rgba(17, 34, 51, 0.2)"
-hexToRgba('#123', 0.2) // "rgba(17, 34, 51, 0.2)"
-
-hexToRgba('1234'); // "rgba(17, 34, 51, 0.27)"
-hexToRgba('#1234'); // "rgba(17, 34, 51, 0.27)"
-hexToRgba('1234', 0.5) // "rgba(17, 34, 51, 0.5)"
-hexToRgba('#1234', 0.75) // "rgba(17, 34, 51, 0.75)"
+// Works with Callbacks:
+fn('Hi!', (error, result) => {
+  if (error) return console.error(error)
+  console.log(result)
+  // -> Hi!
+})
 ```
 
-## Signature
-`hexToRgba(hex, a=1)`
+### `universalify.fromPromise(fn)`
 
-Returns an rgba() string. (examples: `'rgba(11, 22, 33, 1)'`, `'rgba(11, 22, 33, 0.5)'`)
+Takes a promise-based function to universalify, and returns the universalified  function.
 
-## Parameters
-* `hex`: The hex color value to convert to rgba. (examples: `'123456'`, `'#123456'`, `'123'`, `'#123'`)
-* `a`: An alpha value to apply. (optional, default: 1) (examples: `'0.5'`, `0.25`)
+Function must return a valid JS promise. `universalify` does not ensure that a valid promise is returned.
 
+```js
+function promiseFn (n) {
+  return new Promise(resolve => {
+    setTimeout(() => resolve(n), 15)
+  })
+}
 
-## Contributing
-I appreciate your issues and PRs [on Github](https://github.com/misund/hex-to-rgba)!
+const fn = universalify.fromPromise(promiseFn)
 
-### Testing
+// Works with Promises:
+fn('Hello World!')
+.then(result => console.log(result)) // -> Hello World!
+.catch(error => console.error(error))
+
+// Works with Callbacks:
+fn('Hi!', (error, result) => {
+  if (error) return console.error(error)
+  console.log(result)
+  // -> Hi!
+})
 ```
-yarn build && yarn test
-```
 
-### Releasing
-This project uses [np](https://github.com/sindresorhus/np).
-1. Make sure your changes are on main
-2. Run `yarn release`
-3. Follow the interactive release guide
+## License
 
-## Changelog
-See the [releases page on GitHub](https://github.com/misund/hex-to-rgba/releases).
+MIT
