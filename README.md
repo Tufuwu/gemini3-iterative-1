@@ -1,206 +1,123 @@
-# i18n-zipcodes [![Build Status](https://travis-ci.org/sarcadass/i18n-zipcodes.svg?branch=master)](https://travis-ci.org/sarcadass/i18n-zipcodes) [![codecov](https://codecov.io/gh/sarcadass/i18n-zipcodes/branch/master/graph/badge.svg)](https://codecov.io/gh/sarcadass/i18n-zipcodes)
+# convert-source-map [![Build Status][ci-image]][ci-url]
 
-International zipcodes validator in Javascript, based on Regex for Node.js and the browser.
-
-## Install
-
-### For Node.js:
-```sh
-$ npm install i18n-zipcodes
-```
-
-### For the browser:
-* Download the script in the `dist` folder
-
-
-## Usage
+Converts a source-map from/to  different formats and allows adding/changing properties.
 
 ```js
-i18nZipcodes(countryCode: string, zipCode: string): boolean
-// countryCode param is case insensitive
+var convert = require('convert-source-map');
+
+var json = convert
+  .fromComment('//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYnVpbGQvZm9vLm1pbi5qcyIsInNvdXJjZXMiOlsic3JjL2Zvby5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIvIn0=')
+  .toJSON();
+
+var modified = convert
+  .fromComment('//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYnVpbGQvZm9vLm1pbi5qcyIsInNvdXJjZXMiOlsic3JjL2Zvby5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIvIn0=')
+  .setProperty('sources', [ 'SRC/FOO.JS' ])
+  .toJSON();
+
+console.log(json);
+console.log(modified);
 ```
 
-### For Node.js
-```js
-// CommonJS Syntax
-const i18nZipcodes = require('i18n-zipcodes');
-// or ES Syntax
-import i18nZipcodes from 'i18n-zipcodes';
-
-i18nZipcodes('US', '90210'); // true
-
-i18nZipcodes('fr', '5632'); // false
+```json
+{"version":3,"file":"build/foo.min.js","sources":["src/foo.js"],"names":[],"mappings":"AAAA","sourceRoot":"/"}
+{"version":3,"file":"build/foo.min.js","sources":["SRC/FOO.JS"],"names":[],"mappings":"AAAA","sourceRoot":"/"}
 ```
 
-### For the browser
-```html
-<script src="i18n-zipcodes.min.js"></script>
-<script>
-    console.log(i18nZipcodes('fr', '75014')); // true
-</script>
-```
+## API
 
+### fromObject(obj)
 
-## 115 Countries supported
-Country codes use the [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format.
+Returns source map converter from given object.
 
-### A
-- 🇦🇩 (`AD`) Andorra
-- 🇦🇲 (`AM`) Armenia
-- 🇦🇷 (`AR`) Argentina
-- 🇦🇸 (`AS`) American Samoa
-- 🇦🇹 (`AT`) Austria
-- 🇦🇺 (`AU`) Australia
-- 🇦🇿 (`AZ`) Azerbaijan
+### fromJSON(json)
 
-### B
-- 🇧🇦 (`BA`) Bosnia and Herzegovina
-- 🇧🇩 (`BD`) Bangladesh
-- 🇧🇪 (`BE`) Belgium
-- 🇧🇬 (`BG`) Bulgaria
-- 🇧🇯 (`BJ`) Benin
-- 🇧🇲 (`BM`) Bermuda
-- 🇧🇳 (`BN`) Brunei
-- 🇧🇷 (`BR`) Brazil
-- 🇧🇾 (`BY`) Belarus
+Returns source map converter from given json string.
 
-### C
-- 🇨🇦 (`CA`) Canada
-- 🇨🇭 (`CH`) Switzerland
-- 🇨🇳 (`CN`) China
-- 🇨🇺 (`CU`) Cuba
-- 🇨🇽 (`CX`) Christmas Island
-- 🇨🇾 (`CY`) Cyprus
-- 🇨🇿 (`CZ`) Czechia
+### fromBase64(base64)
 
-### D
-- 🇩🇪 (`DE`) Germany
-- 🇩🇰 (`DK`) Denmark
-- 🇩🇿 (`DZ`) Algeria
+Returns source map converter from given base64 encoded json string.
 
-### E
-- 🇪🇪 (`EE`) Estonia
-- 🇪🇸 (`ES`) Spain
+### fromComment(comment)
 
-### F
-- 🇫🇮 (`FI`) Finland
-- 🇫🇲 (`FM`) Micronesia
-- 🇫🇴 (`FO`) Faroe Islands
-- 🇫🇷 (`FR`) France
+Returns source map converter from given base64 encoded json string prefixed with `//# sourceMappingURL=...`.
 
-### G
-- 🇬🇪 (`GE`) Georgia
-- 🇬🇫 (`GF`) French Guiana
-- 🇬🇱 (`GL`) Greenland
-- 🇬🇵 (`GP`) Guadeloupe
-- 🇬🇷 (`GR`) Greece
-- 🇬🇹 (`GT`) Guatemala
-- 🇬🇺 (`GU`) Guam
-- 🇬🇼 (`GW`) Guinea-Bissau
+### fromMapFileComment(comment, mapFileDir)
 
-### H
-- 🇭🇷 (`HR`) Croatia
-- 🇭🇺 (`HU`) Hungary
+Returns source map converter from given `filename` by parsing `//# sourceMappingURL=filename`.
 
-### I
-- 🇮🇨 (`IC`) Canary Islands
-- 🇮🇩 (`ID`) Indonesia
-- 🇮🇪 (`IE`) Ireland
-- 🇮🇱 (`IL`) Israel
-- 🇮🇳 (`IN`) Inde
-- 🇮🇸 (`IS`) Iceland
-- 🇮🇹 (`IT`) Italy
+`filename` must point to a file that is found inside the `mapFileDir`. Most tools store this file right next to the
+generated file, i.e. the one containing the source map.
 
-### J
-- 🇯🇵 (`JP`) Japan
+### fromSource(source)
 
-### K
-- 🇰🇪 (`KE`) Kenya
-- 🇰🇬 (`KG`) Kyrgyzstan
-- 🇰🇷 (`KR`) South Korea
-- 🇰🇼 (`KW`) Kuwait
-- 🇰🇿 (`KZ`) Kazakhstan
+Finds last sourcemap comment in file and returns source map converter or returns null if no source map comment was found.
 
-### L
-- 🇱🇮 (`LI`) Liechtenstein
-- 🇱🇹 (`LT`) Lithuania
-- 🇱🇺 (`LU`) Luxembourg
-- 🇱🇻 (`LV`) Latvia
+### fromMapFileSource(source, mapFileDir)
 
-### M
-- 🇲🇦 (`MA`) Morocco
-- 🇲🇩 (`MD`) Moldova
-- 🇲🇪 (`ME`) Montenegro
-- 🇲🇬 (`MG`) Madagascar
-- 🇲🇭 (`MH`) Marshall Islands
-- 🇲🇰 (`MK`) North Macedonia
-- 🇲🇲 (`MM`) Myanmar
-- 🇲🇳 (`MN`) Mongolia
-- 🇲🇵 (`MP`) Northern Mariana Islands
-- 🇲🇶 (`MQ`) Martinique
-- 🇲🇹 (`MT`) Malta
-- 🇲🇻 (`MV`) Maldives
-- 🇲🇽 (`MX`) Mexico
-- 🇲🇾 (`MY`) Malaysia
-- 🇲🇿 (`MZ`) Mozambique
+Finds last sourcemap comment in file and returns source map converter or returns null if no source map comment was
+found.
 
-### N
-- 🇳🇱 (`NL`) Netherlands
-- 🇳🇴 (`NO`) Norway
-- 🇳🇿 (`NZ`) New Zealand
+The sourcemap will be read from the map file found by parsing `# sourceMappingURL=file` comment. For more info see
+fromMapFileComment.
 
-### P
-- 🇵🇭 (`PH`) Philippines
-- 🇵🇰 (`PK`) Pakistan
-- 🇵🇱 (`PL`) Poland
-- 🇫🇷 (`PM`) Saint Pierre and Miquelon
-- 🇵🇷 (`PR`) Puerto Rico
-- 🇵🇸 (`PS`) Palestine
-- 🇵🇹 (`PT`) Portugal
-- 🇵🇼 (`PW`) Palau
+### toObject()
 
-### R
-- 🇷🇪 (`RE`) Réunion
-- 🇷🇴 (`RO`) Romania
-- 🇷🇸 (`RS`) Serbia
-- 🇷🇺 (`RU`) Russian Federation
+Returns a copy of the underlying source map.
 
-### S
-- 🇸🇦 (`SA`) Saudi Arabia
-- 🇸🇩 (`SD`) Sudan
-- 🇸🇪 (`SE`) Sweden
-- 🇸🇬 (`SG`) Singapore
-- 🇸🇮 (`SI`) Slovenia
-- 🇸🇰 (`SK`) Slovakia
-- 🇸🇲 (`SM`) San Marino
-- 🇸🇿 (`SZ`) Swaziland
+### toJSON([space])
 
-### T
-- 🇹🇭 (`TH`) Thailand
-- 🇹🇯 (`TJ`) Tajikistan
-- 🇹🇲 (`TM`) Turkmenistan
-- 🇹🇳 (`TN`) Tunisia
-- 🇹🇷 (`TR`) Turkey
-- 🇹🇼 (`TW`) Taiwan
+Converts source map to json string. If `space` is given (optional), this will be passed to
+[JSON.stringify](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/JSON/stringify) when the
+JSON string is generated.
 
-### U
-- 🇺🇦 (`UA`) Ukraine
-- 🇬🇧 (`UK`) United Kingdom
-- 🇺🇸 (`US`) United States of America
-- 🇺🇾 (`UY`) Uruguay
-- 🇺🇿 (`UZ`) Uzbekistan
+### toBase64()
 
-### V
-- 🇻🇪 (`VE`) Venezuela
-- 🇻🇮 (`VI`) Virgin Islands (U.S.)
-- 🇻🇳 (`VN`) Viet Nam
+Converts source map to base64 encoded json string.
 
-### X
-- 🇽🇰 (`XK`) Kosovo
+### toComment([options])
 
-### Y
-- (`YU`) Yugoslavia
+Converts source map to an inline comment that can be appended to the source-file.
 
-### Z
-- 🇿🇦 (`ZA`) South Africa
-- 🇿🇲 (`ZM`) Zambia
+By default, the comment is formatted like: `//# sourceMappingURL=...`, which you would
+normally see in a JS source file.
+
+When `options.multiline == true`, the comment is formatted like: `/*# sourceMappingURL=... */`, which you would find in a CSS source file.
+
+### addProperty(key, value)
+
+Adds given property to the source map. Throws an error if property already exists.
+
+### setProperty(key, value)
+
+Sets given property to the source map. If property doesn't exist it is added, otherwise its value is updated.
+
+### getProperty(key)
+
+Gets given property of the source map.
+
+### removeComments(src)
+
+Returns `src` with all source map comments removed
+
+### removeMapFileComments(src)
+
+Returns `src` with all source map comments pointing to map files removed.
+
+### commentRegex
+
+Provides __a fresh__ RegExp each time it is accessed. Can be used to find source map comments.
+
+### mapFileCommentRegex
+
+Provides __a fresh__ RegExp each time it is accessed. Can be used to find source map comments pointing to map files.
+
+### generateMapFileComment(file, [options])
+
+Returns a comment that links to an external source map via `file`.
+
+By default, the comment is formatted like: `//# sourceMappingURL=...`, which you would normally see in a JS source file.
+
+When `options.multiline == true`, the comment is formatted like: `/*# sourceMappingURL=... */`, which you would find in a CSS source file.
+
+[ci-url]: https://github.com/gulpjs/vinyl-sourcemap/actions?query=workflow:ci
+[ci-image]: https://img.shields.io/github/workflow/status/gulpjs/vinyl-sourcemap/ci?style=flat-square

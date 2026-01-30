@@ -1,44 +1,44 @@
 {
-  "name": "i18n-zipcodes",
-  "version": "4.0.0",
-  "description": "International zipcodes validator based on Regex for Node.js and the browser.",
-  "keywords": [
-    "i18n",
-    "zipcode",
-    "validator",
-    "international",
-    "regex"
-  ],
-  "author": "Benjamin Blonde",
-  "license": "MIT",
+  "name": "convert-source-map",
+  "version": "1.8.0",
+  "description": "Converts a source-map from/to  different formats and allows adding/changing properties.",
   "main": "index.js",
   "scripts": {
-    "build": "gulp",
-    "test": "nyc --reporter=text --reporter=lcov mocha",
-    "codecov": "npx codecov"
+    "test": "tap test/*.js --color"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sarcadass/i18n-zipcodes.git"
+    "url": "git://github.com/thlorenz/convert-source-map.git"
   },
-  "directories": {
-    "test": "test"
+  "homepage": "https://github.com/thlorenz/convert-source-map",
+  "dependencies": {
+    "safe-buffer": "~5.1.1"
+  },
+  "devDependencies": {
+    "inline-source-map": "~0.6.2",
+    "tap": "~9.0.0"
+  },
+  "keywords": [
+    "convert",
+    "sourcemap",
+    "source",
+    "map",
+    "browser",
+    "debug"
+  ],
+  "author": {
+    "name": "Thorsten Lorenz",
+    "email": "thlorenz@gmx.de",
+    "url": "http://thlorenz.com"
+  },
+  "license": "MIT",
+  "engine": {
+    "node": ">=0.6"
   },
   "files": [
-    "lib/*",
-    "dist/*"
+    "index.js"
   ],
-  "dependencies": {},
-  "devDependencies": {
-    "array-uniq": "^3.0.0",
-    "browserify": "^17.0.0",
-    "chai": "^4.3.4",
-    "gulp": "^4.0.2",
-    "gulp-header": "^2.0.9",
-    "gulp-rename": "^2.0.0",
-    "gulp-uglify": "^3.0.2",
-    "mocha": "^9.0.0",
-    "nyc": "^15.1.0",
-    "vinyl-source-stream": "^2.0.0"
+  "browser": {
+    "fs": false
   }
 }
