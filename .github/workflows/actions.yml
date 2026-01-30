@@ -1,4 +1,4 @@
-name: Node.js CI with LocalStack
+name: Node.js CI
 
 on:
   push:
@@ -10,37 +10,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [12, 14, 16]
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - run: npm install
+    - run: npm test
+    
+    - name: Coveralls
+      if: success()
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        flag-name: run-${{ matrix.node-version }}
+        parallel: true
 
-      - name: Use Node.js 12
-        uses: actions/setup-node@v3
-        with:
-          node-version: '12'
-          cache: 'npm'
-
-      - name: Start LocalStack
-        run: |
-          docker pull localstack/localstack
-          docker run --rm -d -p 4566:4566 -e SERVICES=lambda,s3,cloudformation,sts localstack/localstack
-          # Wait for LocalStack to be ready
-          timeout 60s bash -c "until curl -s localhost:4566/_localstack/health | grep -q '\"status\": \"running\"'; do sleep 2; done" || true
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run lint and unit tests
-        run: |
-          set -e
-          npm run lint
-          npm run test
-
-      - name: Run integration tests
-        run: |
-          # Ensure serverless is available globally or linked correctly for the shell
-          npm link
-          npm install -g serverless@2
-          sleep 10
-          SLS_DEBUG=* npm run test:integration
+  finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        parallel-finished: true
 

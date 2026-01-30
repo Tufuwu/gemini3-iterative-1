@@ -1,5 +1,8 @@
 .babelrc
-.gitignore
-.travis.yml
-bin/rename
-doc/
+.editorconfig
+.eslintignore
+.eslintrc
+.github
+coverage/
+examples/
+test/
