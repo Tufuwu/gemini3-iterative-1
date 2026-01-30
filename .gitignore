@@ -1,22 +1,31 @@
-# Compiled files
-*__pycache__
-*.py[cod]
+*.bak
+*.egg-info/
+*.log
+*.pyc
+*.pyo
+*.tmp
+
+.DS_Store
+.coverage
+.coverage.*
+.done.*
+
+.eggs/
+.idea/
+.pytest_cache/
+.tox/
+.venv*/
+.settings/
+
 build/
-
-# Packaging related files
-*.egg
-*.egg-info
 dist/
+downloads/
 
-# Testing files
-.pytest_cache
-.cache
-.tox
+__pypackages__/
+__pycache__/
+**/__pycache__/
 
-# Documentation
-doc/build
-doc/source/_build
+# -- OWN WORKSPACE: Directory(s), File(s)
+__*/
+__*.txt
 
-# Development files
-Pipfile
-Pipfile.lock
