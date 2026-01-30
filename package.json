@@ -1,40 +1,36 @@
 {
-  "name": "serve-index",
-  "description": "Serve directory listings",
-  "version": "1.9.1",
-  "author": "Douglas Christopher Wilson <doug@somethingdoug.com>",
+  "name": "postcss-pseudo-classes",
+  "version": "0.4.0",
+  "description": "PostCSS plugin to convert pseudo-classes to classes for testing purposes",
+  "keywords": [
+    "postcss",
+    "css",
+    "postcss-plugin",
+    "css test",
+    "pseudo classes"
+  ],
+  "author": "Giuseppe Gurgone",
   "license": "MIT",
-  "repository": "expressjs/serve-index",
-  "dependencies": {
-    "accepts": "~1.3.7",
-    "batch": "0.6.1",
-    "debug": "2.6.9",
-    "escape-html": "~1.0.3",
-    "http-errors": "~1.8.0",
-    "mime-types": "~2.1.29",
-    "parseurl": "~1.3.3"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giuseppeg/postcss-pseudo-classes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/giuseppeg/postcss-pseudo-classes/issues"
+  },
+  "homepage": "https://github.com/giuseppeg/postcss-pseudo-classes",
+  "peerDependencies": {
+    "postcss": "^8.0.0"
   },
   "devDependencies": {
-    "after": "0.8.2",
-    "eslint": "7.23.0",
-    "eslint-plugin-markdown": "2.0.0",
-    "mocha": "10.4.0",
-    "nyc": "15.1.0",
-    "supertest": "7.0.0"
-  },
-  "files": [
-    "public/",
-    "LICENSE",
-    "HISTORY.md",
-    "index.js"
-  ],
-  "engines": {
-    "node": ">= 0.8.0"
+    "ava": "^2.0.0",
+    "eslint": "^6.0.0",
+    "postcss": "^8.4.31"
   },
   "scripts": {
-    "lint": "eslint .",
-    "test": "mocha --reporter spec --bail --check-leaks test/",
-    "test-ci": "nyc --reporter=lcov --reporter=text npm test",
-    "test-cov": "nyc --reporter=html --reporter=text npm test"
-  }
+    "test": "ava test/test.js && eslint *.js test/*.js"
+  },
+  "files": [
+    "index.js"
+  ]
 }
