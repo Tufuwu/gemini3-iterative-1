@@ -1,26 +1,25 @@
-# The gpodder.net Client Library
+[![Build Status](https://github.com/ibm/qpylib/workflows/build/badge.svg)](https://github.com/ibm/qpylib/actions)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=qpylib&metric=alert_status)](https://sonarcloud.io/dashboard?id=qpylib)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=qpylib&metric=coverage)](https://sonarcloud.io/component_measures?id=qpylib&metric=new_coverage&view=list)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5832/badge)](https://bestpractices.coreinfrastructure.org/projects/5832)
 
-This library provides an easy and structured way to access the
-gpodder.net web services. In addition to subscription list
-synchronization and storage, the advanced API support allows
-to upload and download episode status changes.
+# QRadar App Python Library (qpylib)
 
-The source of this library is managed in a Git repository at
+A library of Python utility functions to assist in developing QRadar applications
+by providing a simplified interface to the QRadar App Framework and REST API.
 
- - https://github.com/gpodder/mygpoclient
+## Compatibility
 
-Documentation can be read online at
+The qpylib library hosted here is for use only with apps that have been written in
+Python 3 to run on Red Hat Universal Base Image. It is not compatible with apps
+written to run on a CentOS base image.
 
-    http://mygpoclient.readthedocs.io/
+Most functions are the equivalent of their pre-Github counterparts, although
+there may be some small differences in parameter names and in error handling.
 
-If you have any questions, please don't hesitate to contact
-the gPodder developers mailing list at
+## Project details
 
- - gpodder@freelists.org
-
-You can report bugs and problems that you find on GitHub at
-
- - https://github.com/gpodder/gpodder/issues
-
-Thank you for your interest in the mygpoclient library!
-
+* [LICENSE](LICENSE)
+* [CONTRIBUTING](CONTRIBUTING.md)
+* [MAINTAINERS](MAINTAINERS.md)
+* [CHANGELOG](CHANGELOG.md)

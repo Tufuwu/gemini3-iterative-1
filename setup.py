@@ -1,71 +1,39 @@
-#!/usr/bin/env python
-# Generic setup script for single-package Python projects
-# by Thomas Perl <thp.io/about>
+"""
+Copyright 2019 IBM Corporation All Rights Reserved.
 
-from distutils.core import setup
+SPDX-License-Identifier: Apache-2.0
+"""
+import setuptools
 
-import re
-import os
-import glob
+def main():
+    with open("qpylib/version.py", "r") as version_file:
+        line = version_file.read().rstrip()
+        _, _, version = line.replace("'", '').split()
 
-PACKAGE = 'mygpoclient'
-SCRIPT_FILE = os.path.join(PACKAGE, '__init__.py')
+    with open("README.md", "r") as readme:
+        long_desc = readme.read()
 
-main_py = open(SCRIPT_FILE).read()
-metadata = dict(re.findall("__([a-z]+)__ = '([^']+)'", main_py))
-docstrings = re.findall('"""(.*?)"""', main_py, re.DOTALL)
-
-# List the packages that need to be installed/packaged
-PACKAGES = (
-        PACKAGE,
-)
-
-SCRIPTS = glob.glob('bin/*')
-
-# Metadata fields extracted from SCRIPT_FILE
-AUTHOR_EMAIL = metadata['author']
-VERSION = metadata['version']
-WEBSITE = metadata['website']
-LICENSE = metadata['license']
-DESCRIPTION = docstrings[0].strip()
-if '\n\n' in DESCRIPTION:
-    DESCRIPTION, LONG_DESCRIPTION = DESCRIPTION.split('\n\n', 1)
-else:
-    LONG_DESCRIPTION = None
-
-# Extract name and e-mail ("Firstname Lastname <mail@example.org>")
-AUTHOR, EMAIL = re.match(r'(.*) <(.*)>', AUTHOR_EMAIL).groups()
-
-DATA_FILES = [
-    ('share/man/man1', glob.glob('man/*')),
-]
-
-CLASSIFIERS = [
-    'Development Status :: 5 - Production/Stable',
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.6',
-    'Programming Language :: Python :: 2.7',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.3',
-    'Programming Language :: Python :: 3.4',
-]
-
-setup(name=PACKAGE,
-      version=VERSION,
-      description=DESCRIPTION,
-      long_description=LONG_DESCRIPTION,
-      author=AUTHOR,
-      author_email=EMAIL,
-      license=LICENSE,
-      url=WEBSITE,
-      packages=PACKAGES,
-      scripts=SCRIPTS,
-      data_files=DATA_FILES,
-      download_url=WEBSITE+PACKAGE+'-'+VERSION+'.tar.gz',
-      classifiers=CLASSIFIERS,
+    setuptools.setup(
+        name="qpylib",
+        author="IBM",
+        author_email="<>",
+        version=version,
+        description="QRadar app utility library",
+        long_description=long_desc,
+        long_description_content_type="text/markdown",
+        license="SPDX-License-Identifier: Apache-2.0",
+        url="https://github.com/ibm/qpylib",
+        packages=setuptools.find_packages(),
+        install_requires=[
+            "flask>=1.1,<2",
+            "requests>=2.22,<3",
+            "pycryptodome>=3.9,<4",
+            "cryptography>=2.8,<4"
+        ],
+        classifiers=[
+            "Programming Language :: Python :: 3",
+            "Operating System :: OS Independent",
+        ],
     )
 
+main()
