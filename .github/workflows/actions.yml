@@ -1,46 +1,32 @@
-name: CI
+name: Python CI
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - python_version: "3.12-rc-bullseye"
-            postgres_version: "15"
-          - python_version: "3.11-bullseye"
-            postgres_version: "15"
-          - python_version: "3.11-bullseye"
-            postgres_version: "14"
-          - python_version: "3.10-bullseye"
-            postgres_version: "14"
-          - python_version: "3.10-bullseye"
-            postgres_version: "13"
-          - python_version: "3.10-bullseye"
-            postgres_version: "12"
-          - python_version: "3.9-bullseye"
-            postgres_version: "14"
-          - python_version: "3.8-bullseye"
-            postgres_version: "14"
-
-    env:
-      PYTHON_VERSION: ${{ matrix.python_version }}
-      POSTGRES_VERSION: ${{ matrix.postgres_version }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Build docker-compose
-        run: docker compose build
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
 
-      - name: Run tests
-        run: docker compose run --entrypoint="pytest tests" nycdb
+      - name: Install dependencies
+        run: |
+          pip install coverage
+
+      - name: Run script
+        run: coverage run jsn.py -i example.jsn -o test.json -I import_dir
+
+      - name: Generate XML report
+        run: coverage xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
