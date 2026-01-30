@@ -1,6 +1,13 @@
-include AUTHORS.rst
-include CONTRIBUTING.rst
-include HISTORY.rst
+# Package Details
+include README.md
 include LICENSE
-include README.rst
-recursive-include rest_framework_tus *.html *.png *.gif *js *.css *jpg *jpeg *svg *py
+
+# Package Example
+include example.py
+
+# Package Code
+graft content_hash
+
+# Ignore Cache
+global-exclude *.py[co]
+global-exclude __pycache__

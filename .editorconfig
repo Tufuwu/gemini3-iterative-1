@@ -1,21 +1,27 @@
+# EditorConfig helps developers define and maintain consistent
+# coding styles between different editors and IDEs
+# https://editorconfig.org
+
 root = true
 
+# General
 [*]
 charset = utf-8
 end_of_line = lf
+indent_style = space
+indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[*.{py,rst,ini}]
-indent_style = space
-indent_size = 4
-
-[*.{html,css,scss,json,yml}]
+# Web & Data
+[*.{html,css,js,json,yaml,yml}]
 indent_style = space
 indent_size = 2
 
-[*.md]
-trim_trailing_whitespace = false
+# Windows
+[*.{bat,cmd,ps1}]
+end_of_line = crlf
 
-[Makefile]
-indent_style = tab
+# Markdown & reStructuredText & AsciiDoc
+[*.{md,rst,adoc}]
+trim_trailing_whitespace = false
