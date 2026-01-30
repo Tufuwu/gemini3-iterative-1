@@ -1,260 +1,171 @@
-# grafana-dashboard-builder
+OpenSSH / LDAP public keys
+==========================
+[![Build Status](https://github.com/jirutka/ssh-ldap-pubkey/workflows/CI/badge.svg)](https://github.com/jirutka/ssh-ldap-pubkey/actions?query=workflow%3A%22CI%22)
+[![Code Climate](https://codeclimate.com/github/jirutka/ssh-ldap-pubkey/badges/gpa.svg)](https://codeclimate.com/github/jirutka/ssh-ldap-pubkey)
+[![version](https://img.shields.io/pypi/v/ssh-ldap-pubkey.svg?style=flat)](https://pypi.python.org/pypi/ssh-ldap-pubkey)
 
-[![PyPI version](https://badge.fury.io/py/grafana-dashboard-builder.svg)](http://badge.fury.io/py/grafana-dashboard-builder) [![Build Status](https://travis-ci.org/jakubplichta/grafana-dashboard-builder.svg?branch=master)](https://travis-ci.org/jakubplichta/grafana-dashboard-builder) [![Coverage Status](https://coveralls.io/repos/jakubplichta/grafana-dashboard-builder/badge.svg?branch=master)](https://coveralls.io/r/jakubplichta/grafana-dashboard-builder?branch=master)
+This project provides an utility to manage SSH public keys stored in LDAP and also a script for
+OpenSSH server to load authorized keys from LDAP.
 
-## Introduction
 
-_grafana-dashboard-builder_ is an open-source tool for easier creation of [Grafana](http://grafana.org/) dashboards.
-It is written in [Python](https://www.python.org/) and uses [YAML](http://yaml.org/) descriptors for dashboard
-templates.
+Why?
+----
 
-This project has been inspired by [Jenkins Job Builder](https://github.com/openstack-infra/jenkins-job-builder) that
-allows users to describe [Jenkins](https://jenkins-ci.org/) jobs with human-readable format. _grafana-dashboard-builder_
-aims to provide similar simplicity to Grafana dashboard creation and to give users easy way how they can create dashboard
-templates filled with different configuration.
+When you have dozen of servers it becomes difficult to manage your authorized keys. You have to
+copy all your public keys to `~/.ssh/authorized_keys` on every server you want to login to. And
+what if you someday change your keys?
 
-## Installation
+It’s a good practice to use some kind of a centralized user management, usually an LDAP server.
+There you have user’s login, uid, e-mail, … and password. What if we could also store public SSH
+keys on LDAP server? With this utility it’s easy as pie.
 
-To install:
 
-```
-sudo pip install grafana-dashboard-builder
-```
-or
-```
-sudo python setup.py install
-```
+Alternatives
+------------
 
-## Usage
+If you need just a lightweight utility for OpenSSH server to load authorized keys from LDAP,
+then you can use [ssh-getkey-ldap](https://github.com/jirutka/ssh-getkey-ldap) written in Lua
+or [this one](https://gist.github.com/jirutka/b15c31b2739a4f3eab63) written in POSIX shell
+(but it requires `ldapsearch` utility and may not work well on some systems).
 
-After installation you'll find `grafana-dashboard-builder` on your path. Help can be printed by `--help` command-line
-option.
 
-```
-usage: grafana-dashboard-builder [-h] -p PATH [PATH ...] [--project PROJECT] [-o OUT] [-c CONFIG]
-                                 [--context CONTEXT] [--plugins PLUGINS [PLUGINS ...]]
-                                 [--exporter EXPORTERS [EXPORTERS ...]]
+Requirements
+------------
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -p PATH [PATH ...], --path PATH [PATH ...]
-                        List of path to YAML definition files
-  --project PROJECT     (deprecated, use path) Location of the file containing
-                        project definition.
-  -o OUT, --out OUT     (deprecated, use config file and file exporter) Path
-                        to output folder
-  -c CONFIG, --config CONFIG
-                        Configuration file containing fine-tuned setup of
-                        builder's components.
-  --context CONTEXT     YAML structure defining parameters for dashboard
-                        definition. Effectively overrides any parameter
-                        defined on project level.
-  --plugins PLUGINS [PLUGINS ...]
-                        List of external component plugins to load
-  --exporter EXPORTERS [EXPORTERS ...]
-                        List of dashboard exporters
-```
+* Python 3.6+
+* [python-ldap] 3.x
+* [docopt] 0.6.x
 
-To start you need to create project configuration that needs to be in one YAML document. And some examples with current
-can be found in [sample project](samples/project.yaml):
+You can install both Python modules from PyPI.
+python-ldap requires additional system dependencies – OpenLDAP.
+Refer to [Stack Overflow](http://stackoverflow.com/q/4768446/240963) for distribution-specific information.
 
-```bash
-grafana-dashboard-builder -p ./samples/project.yaml --exporter file --config ./samples/config.yaml
-```
 
-## Exporters
+Installation
+------------
 
-_grafana-dashboard-builder_ provides several builtin exporters that can be enabled through `--exporter` option.
-Configuration for all of them is to be provided in configuration file given in `--config` option. Look at
-[sample config](samples/config.yaml).
+### PyPI:
 
-### File exporter
+    pip install ssh-ldap-pubkey
 
-File exporter is used when you want to store dashboards as JSON files on your local disk.
+### Alpine Linux
 
-```yaml
-file:
-  output_folder: /some/directory/on/my/disk
-```
+    apk add ssh-ldap-pubkey
 
-To use file exporter run _grafana-dashboard-builder_ with `--exporter file` option.
+Note: The package is currently in the (official) _community_ repository; make sure that you have community in `/etc/apk/repositories`.
 
-### Grafana Elastic Search
 
-_grafana-dashboard-builder_ currently supports persisting dashboards to _Elastic Search_ used by _Grafana_ prior
-to version 2.0
+Usage
+-----
 
-To configure _Elastic Search_ endpoint put following structure to your configuration file:
+List SSH public keys stored in LDAP for the current user:
 
-```yaml
-elastic-search:
-  host: https://this-is-my-domain.com
-  password: my_password
-  username: my_username
-```
+    ssh-ldap-pubkey list
 
-With this configuration your dashboard will be uploaded to `https://this-is-my-domain.com/es/grafana-dash/dashboard/dashboard_name`
+List SSH public keys stored in LDAP for the specified user:
 
-If you do not want to store your credentials in the configuration file you can use environment variables `ES_PASSWORD`
-and `ES_USERNAME`.
+    ssh-ldap-pubkey list -u flynn
 
-To use elastic search exporter run _grafana-dashboard-builder_ with `--exporter elastic-search` option.
+Add the specified SSH public key for the current user to LDAP:
 
-### Grafana API
+    ssh-ldap-pubkey add ~/.ssh/id_rsa.pub
 
-_grafana-dashboard-builder_ currently supports _Grafana_ version 2.0 API.
+Remove SSH public key(s) of the current user that matches the specified pattern:
 
-To configure _Grafana_ endpoint put following structure to your configuration file:
+    ssh-ldap-pubkey del flynn@grid
 
-```yaml
-grafana:
-  host: https://this-is-my-domain.com
-  password: my_password
-  username: my_username
-```
+Specify LDAP URI and base DN on command line instead of configuration file:
 
-With this configuration your dashboard will be POSTed to `https://this-is-my-domain.com/api/dashboards/db`
+    ssh-ldap-pubkey list -b ou=People,dc=encom,dc=com -H ldaps://encom.com -u flynn
 
-If you do not want to store your credentials in the configuration file you can use environment variables
-`GRAFANA_PASSWORD` and `GRAFANA_USERNAME`.
+As the LDAP manager, add SSH public key to LDAP for the specified user:
 
+    ssh-ldap-pubkey add -D cn=Manager,dc=encom,dc=com -u flynn ~/.ssh/id_rsa.pub
 
-You can use Organization API Key to access _Grafana_ API:
+Show help for other options:
 
-Set token in your configuration file:
-```yaml
-grafana:
-  host: https://this-is-my-domain.com
-  token: eyJrIjoiOGNTW...o2b2123kO==
-```
+    ssh-ldap-pubkey --help
 
-Or in `GRAFANA_TOKEN` environment variable.
 
-Read more about authentication in [_Grafana_ docs](http://docs.grafana.org/http_api/auth/#authentication-api).
+Configuration
+-------------
 
+Configuration is read from /etc/ldap.conf — file used by LDAP nameservice switch library and the
+LDAP PAM module. An example file is included in [etc/ldap.conf][ldap.conf]. The following subset of
+parameters are used:
 
-To use Grafana exporter run _grafana-dashboard-builder_ with `--exporter grafana` option.
+*  **uri** ... URI(s) of the LDAP server(s) to connect to, separated by a space. The URI scheme may
+               be ldap, or ldaps. Default is `ldap://localhost`.
+*  **nss_base_passwd** ... distinguished name (DN) of the search base.
+*  **base** ... distinguished name (DN) of the search base. Used when *nss_base_passwd* is not set.
+*  **scope** ... search scope; _sub_, _one_, or _base_ (default is _sub_).
+*  **referrals** ... should client automatically follow referrals returned by LDAP servers (default is _on_)?
+*  **pam_filter** ... filter to use when searching for the user’s entry, additional to the login
+        attribute value assertion (`pam_login_attribute=<login>`). Default is
+        _objectclass=posixAccount_.
+*  **pam_login_attribute** ... the user ID attribute (default is _uid_).
+*  **ldap_version** ... LDAP version to use (default is 3).
+*  **sasl** ... enable SASL and specify mechanism to use (currently only GSSAPI is supported).
+*  **binddn** ... distinguished name (DN) to bind when reading the user’s entry (default is to bind
+                  anonymously).
+*  **bindpw** ... credentials to bind with when reading the user’s entry (default is none).
+*  **ssl** ... LDAP SSL/TLS method; _off_, _on_, or _start_tls_. If you use LDAP over SSL (i.e. URI `ldaps://`), leave this empty.
+*  **timelimit** ... search time limit in seconds (default is 10).
+*  **bind_timelimit** ... bind/connect time limit in seconds (default is 10). If multiple URIs are
+                          specified in _uri_, then the next one is tried after this timeout.
+*  **tls_cacertdir** ... path of the directory with CA certificates for LDAP server certificate
+                         verification.
+*  **pubkey_class** ... objectClass that should be added/removed to/from the user’s entry when adding/removing first/last public key and the *pubkey_attr* is mandatory for this class.
+   This is needed for the original openssh-lpk.schema (not for the one in this repository).
+   Default is `ldapPublicKey`.
+*  **pubkey_attr** ... name of LDAP attribute used for SSH public keys (default is `sshPublicKey`).
 
-## Supported data stores
+The only required parameter is *nss_base_passwd* or _base_, others have sensitive defaults. You
+might want to define _uri_ parameter as well. These parameters can be also defined/overriden
+with `--bind` and `--uri` options on command line.
 
-At this moment _grafana-dashboard-builder_ supports following data stores:
+For more information about these parameters refer to ldap.conf man page.
 
-- [Graphite](https://graphiteapp.org/)
-- [Prometheus](https://prometheus.io/)
-- [InfluxDB](https://www.influxdata.com/)
-
-## YAML definition format
-
-Each component follows the same configuration format. Top level must contain 2 fields - name and component type.
-Under component type is wrapped definition of the component.
-
-```yaml
-- name: some-name
-  component-type:
-    component-param1: param-value
-    component-param2: other-value
-```
 
-Components can be defined in multiple source files that are passed through `--path` option. If a path is directory
-it is recursively walked and all files are processed.
-
-### Components
-
-Components define basic building blocks such as rows, graphs and template queries. They can be defined in-place or be
-named and reused within other components and dashboards.
-
-Components can define parameters that can be passed from parent component to its children.
-
-```yaml
-- name: graph-name
-  panels:
-    - graph:
-        target: target
-        y_formats: [bytes, short]
-        span: 4
-```
-
-```yaml
-- name: row-name
-  rows:
-    - row:
-        title: Placeholder row
-        panels:
-            - graph-name
-            - graph:
-                target: target
-                y_formats: [bytes, short]
-                span: 4
-```
-
-Another component is template queries that allow you to define just one query string for hierarchical variables. Each
-query part that starts with $ sign will appear as one variable.
-
-```yaml
-- name: template-name
-  templates:
-    - query:
-        query: '{metric-prefix}.$component.$application'
-```
-
-### Dashboard
-
-Dashboard is top-level object composed of several components.
-
-```yaml
-- name: overview
-  dashboard:
-    title: overview dashboard
-    time_options: [1h]
-    refresh_intervals: [5m]
-    templates:
-      - template-name:
-            metric-prefix: '{metric-prefix}'
-    time:
-      from: now-12h
-      to: now
-    rows:
-      - row-name
-```
-
-### Project
-
-Project is an entry point for builder and defines which dashboards will be generated and provides parameters to them.
-
-```yaml
-- name: Example project
-  project:
-    dashboard-prefix: MyApp
-    metric-prefix: metric.prefix
-    dashboards:
-        - overview
-```
-
-The biggest benefit of _grafana-dashboard-builder_ is that you can generate several dashboards from one dashboard
-template just by defining multiple values for a parameter that is contained in dashboard name. Following project will
-generate 2 dashboards named _prefix1-dashboard_ and _prefix2-dashboard_. 
-
-```yaml
-- name: Example project
-  project:
-    dashboard-prefix:
-      - prefix1
-      - prefix2
-    dashboards:
-      - '{dashboard-prefix}-dashboard'
-```
-
-## External context definition
-
-Thanks to _project_ component you can use one dashboard template and configure it with different parameters. But what
-if you need to use different params based on the _Grafana_ you are uploading dashboards to. That's why you can define
-configuration externally to your projects and dashboard templates.
-
-You can reference configuration stored in YAML with `-config` option or even inline it to `--context` option. External
-configuration file can look like:
-
-```yaml
-context:
-  region: eu
-  default-datacenter: cze
-```
+Set up OpenSSH server
+--------------------
+
+To configure OpenSSH server to fetch users’ authorized keys from LDAP server:
+
+1.  Make sure that you have installed **ssh-ldap-pubkey** and **ssh-ldap-pubkey-wrapper** in
+    `/usr/bin` with owner `root` and mode `0755`.
+2.  Add these two lines to /etc/ssh/sshd_config:
+
+        AuthorizedKeysCommand /usr/bin/ssh-ldap-pubkey-wrapper
+        AuthorizedKeysCommandUser nobody
+
+3.  Restart sshd and check log file if there’s no problem.
+
+Note: This method is supported by OpenSSH since version 6.2-p1 (or 5.3 onRedHat). If you have an
+older version and can’t upgrade, for whatever weird reason, use [openssh-lpk] patch instead.
+
+
+Set up LDAP server
+------------------
+
+Just add the [openssh-lpk.schema] to your LDAP server, **or** add an attribute named `sshPublicKey`
+to any existing schema which is already defined in people entries. That’s all.
+
+Note: Presumably, you’ve already set up your LDAP server for centralized unix users management,
+i.e. you have the [NIS schema](http://www.zytrax.com/books/ldap/ape/nis.html) and users in LDAP.
+
+
+License
+-------
+
+This project is licensed under [MIT license](http://opensource.org/licenses/MIT).
+
+
+[python-ldap]: https://pypi.python.org/pypi/python-ldap/
+[docopt]: https://pypi.python.org/pypi/docopt/
+[ebuild]: https://github.com/cvut/gentoo-overlay/tree/master/sys-auth/ssh-ldap-pubkey
+[cvut-overlay]: https://github.com/cvut/gentoo-overlay
+[openssh-lpk]: http://code.google.com/p/openssh-lpk/
+
+[ldap.conf]: https://github.com/jirutka/ssh-ldap-pubkey/blob/master/etc/ldap.conf
+[openssh-lpk.schema]: https://github.com/jirutka/ssh-ldap-pubkey/blob/master/etc/openssh-lpk.schema
