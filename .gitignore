@@ -1,3 +1,4 @@
 node_modules
-*.build.js
-wpt-master/
+.vscode/
+.DS_Store
+yarn-error.log
