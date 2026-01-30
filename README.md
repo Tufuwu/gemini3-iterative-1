@@ -1,229 +1,118 @@
-[![Build Status](https://github.com/laowantong/paroxython/actions/workflows/build.yml/badge.svg)](https://github.com/laowantong/paroxython/actions/workflows/build.yml)
-[![codecov](https://img.shields.io/codecov/c/github/laowantong/paroxython/master)](https://codecov.io/gh/laowantong/paroxython)
-[![Checked with mypy](https://img.shields.io/badge/typing-mypy-brightgreen)](http://mypy-lang.org/)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/73432ed4c5294326ba6279bbbb0fe2e6)](https://www.codacy.com/manual/laowantong/paroxython)
-[![Updates](https://pyup.io/repos/github/laowantong/paroxython/shield.svg)](https://pyup.io/repos/github/laowantong/paroxython/)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/paroxython)
-[![GitHub Release](https://img.shields.io/github/release/laowantong/paroxython.svg?style=flat)]()
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/laowantong/paroxython)
-[![paroxython SLOC](https://img.shields.io/badge/main%20program-~1850%20SLOC-blue)](https://github.com/laowantong/paroxython/blob/master/paroxython)
-[![tests SLOC](https://img.shields.io/badge/tests-~2550%20SLOC-blue)](https://github.com/laowantong/paroxython/blob/master/tests)
-[![helpers SLOC](https://img.shields.io/badge/helpers-~900%20SLOC-blue)](https://github.com/laowantong/paroxython/blob/master/helpers)
-[![spec features](https://img.shields.io/badge/spec-173%20features-blue)](https://github.com/laowantong/paroxython/blob/master/paroxython/resources/spec.md)
-[![taxonomy mappings](https://img.shields.io/badge/taxonomy-282%20mappings-blue)](https://github.com/laowantong/paroxython/blob/master/paroxython/resources/taxonomy.tsv)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/y/laowantong/paroxython.svg?style=flat)
-[![Downloads](https://pepy.tech/badge/paroxython/week)](https://pepy.tech/project/paroxython/week)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Band-aid](https://badgen.net/badge/not%C2%A0%C2%A0%F0%9F%85%B3%F0%9F%85%B4%F0%9F%85%B0%F0%9F%85%B3/yet/F3D9C5?labelColor=F3D9C5)](https://youtu.be/QcbR1J_4ICg?t=54)
+# GuardDuty Multi-Account Manager
 
-<p align="center">
-  <a href="https://laowantong.github.io/paroxython/index.html">
-  <img src="docs/resources/logo.png">
-  </a>
-</p>
+Automate the AWS GuardDuty account invitation lifecycle for all of your 
+organizations AWS accounts in all regions as well as aggregate and normalize 
+the GuardDuty findings
 
-## Introduction
+## Architecture
 
-Paroxython is a set of command line tools which **tag** and **filter** by algorithmic features your collection of Python programming exercises.
+!['docs/dgram.png'](docs/dgram.png)
 
-### Audience
+> Above is an example architecture for a master account with a member account. 
+> Note: The member account has GuardDuty detectors in every region as does the 
+> master account.
 
-You are a teacher, in charge of an introductory programming course in an educational institution. Over the years, you have accumulated many—far too many—programs and code snippets that may be of interest to your students.
+## Why This?
 
-Or, as a seasoned developer, you would like to share your knowledge by helping a loved one learn how to code. A cursory search for pedagogical material yields an overwhelming amount of websites and repositories stuffed with Python programs of various levels (e.g.,
-[1](https://github.com/TheAlgorithms/Python),
-[2](http://rosettacode.org/wiki/Category:Python),
-[3](https://www.programming-idioms.org/about#about-block-language-coverage),
-[4](https://github.com/codebasics/py),
-[5](https://github.com/keon/algorithms),
-[6](https://github.com/OmkarPathak/Python-Programs),
-and a lot more from [Awesome Python in Education](https://github.com/quobit/awesome-python-in-education)).
+As a multi-account user of Amazon Web Services you have a few choices when
+deciding to turn on GuardDuty across your accounts.
 
-In any case, the Python source codes you have gathered are typically
-**numerous** (hundreds or even thousands),
-**reasonably sized** (anything below 100 lines of code),
-and **educational** in nature (e.g., snippets, examples, quizzes, exercise solutions, classic algorithms).
-The programming concepts you plan to teach remain relatively **low level** (e.g. assignments, nested loops, accumulation patterns, tail recursive functions, etc.).
+Your options are:
 
-If all that sounds familiar, keep reading me.
+1. Stack Sets
+2. Human invitations
+3. Something else.
 
-### Main goals
+Due to the nature of stack sets and the distributed governance of Mozilla it
+breaks our trust model to grant the needed permissions to run stack sets.
+Human behavior consistently generates inconsistent results.
 
-Paroxython aims to help you select, from your collection, the one program that best suits your needs. For instance, it will gladly answer the following questions:
+This is why we elected to create GuardDuty Multi-Account Manager
 
-> - How can this concept be illustrated?
-> - What problems use the same algorithmic and data structures as this one?
-> - What homework assignment should I give my students so they can practice the content of the last lesson?
+## What is it?
 
-Moreover, since Paroxython knows what your class knows, it can recommend the right program at the right time:
+GuardDuty Multi-Account Manager is a series of lambda functions designed to do
+the following:
 
-> - What would make a good review exercise?
-> - Which exercises can I give on this exam?
-> - What is the current learning cost of this example?
+* Enable GuardDuty Masters in all AWS Regions present and future.
+* Empower account owners to decide to enable GuardDuty
+* Manage the lifecycle of invitations to the member accounts
+* Aggregate all findings from all detectors in all regions, normalize the data,
+  and send to a single SQS queue
 
-In the long run, Paroxython may guide you and somehow make you rethink your course outline:
+## How do I deploy it?
 
-> - What are the prerequisites for the concept of assignment?
-> - Do I have enough material to introduce subroutines before I even talk about conditionals and loops?
-> - Among the loops, which must come first: the most powerful (`while`), or the most useful (`for`)?
-> - How to logically structure this bunch of usual iterative patterns?
-> - What are the _basics_, exactly?
+### Dependencies
 
-All issues on which the author changed his mind since he started to work on this project!
+* AWS Organizations
+  * Either run the GuardDuty Multi-Account Manager from within an AWS
+    Organizations parent account or
+  * Establish an IAM Role in the AWS Organizations parent account that can be
+    assumed by the GuardDuty Multi-Account Manager.
+    [Example IAM Role](docs/example-organizations-reader-iam-role.yml)
+* Deploy the
+  [Cloudformation Cross Account Outputs](https://github.com/mozilla/cloudformation-cross-account-outputs/)
+  service which allows CloudFormation stacks in other AWS accounts to report
+  back output. This is used to convey the
+  [GuardDuty Member Account IAM Role](cloudformation/guardduty-member-account-role.yml)
+  information. In order to deploy this service 
+  [follow the instructions in the README](https://github.com/mozilla/cloudformation-cross-account-outputs#deploy-the-infrastructure)
+  which explains how. 
+  * Make sure that in Step 1 and 2 you deploy each template in only one region. These resources shouldn't be deployed multiple times in an AWS account.
+  * Make sure that in Step 3, you deploy the `cloudformation-sns-emission-consumer.yml`
+  template in every region that you want to allow your GuardDuty members to potentially
+  deploy the GuardDuty member role in. For example, in the included 
+  [`guardduty-member-account-role.yml`](cloudformation/guardduty-member-account-role.yml),
+  it assumes that you'll have deployed `cloudformation-sns-emission-consumer.yml`
+  in both `us-west-2` and `us-east-1`
+* Customize the 
+  [`guardduty-member-account-role.yml`](cloudformation/guardduty-member-account-role.yml)
+  CloudFormation template which you'll distribute to your members. 
+  * You need to set two values in the `Mappings` section of the template
+    * `MasterAccount`:`Principal` : Set this to the 
+      [root principal](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#Principal_specifying)
+      of your AWS account in which you're running the GuardDuty master. For
+      example `arn:aws:iam::123456789012:root`
+    * `SNSTopicForPublishingIAMRoleArn`:`Account` : Set this to the 
+      [AWS Account ID](https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html#FindingYourAccountIdentifiers)
+      of the AWS account that you've deployed the 
+      [Cloudformation Cross Account Outputs](https://github.com/mozilla/cloudformation-cross-account-outputs/)
+      service in. For example `123456789012`.
+  * Add any additional regions that you wish to support (which you've deployed 
+    Cloudformation Cross Account Outputs in) into the 
+    `TheRegionYouAreDeployingIn` mapping following the example of the existing
+    two regions listed there already.
+  
+### Getting Started
 
-In an ideal world, Paroxython could even put an end to the deadliest religious wars, with rational, data-driven arguments:
+* Deploy the Cloudformation Stack from
+  [`cloudformation/guardduty-multi-account-manager-parent.yml`](https://s3-us-west-2.amazonaws.com/public.us-west-2.infosec.mozilla.org/guardduty-multi-account-manager/cf/guardduty-multi-account-manager-parent.yml) in the master
+  account. [![Launch GuardDuty Multi Account Manager](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=guardduty-multi-account-manager&templateURL=https://s3-us-west-2.amazonaws.com/public.us-west-2.infosec.mozilla.org/guardduty-multi-account-manager/cf/guardduty-multi-account-manager-parent.yml)
 
-> - Father, is it a sin to exit early?
-> - Should a real byte use a mask?
+* The stack will spin up and create all Master Detectors in all regions, a
+  normalization functions, and all SNS Topics with CloudWatch events.
 
-### How it works
+### Onboarding Accounts
 
-<p align="center">
-  <a href="https://laowantong.github.io/paroxython/developer_manual/index.html">
-  <img src="docs/resources/waterfall.png">
-  </a>
-</p>
+1. Ensure that the the mappings are configured in the
+   [`cloudformation/guardduty-member-account-role.yml`](cloudformation/guardduty-member-account-role.yml)
+   template as described above
+2. Deploy the customized [`cloudformation/guardduty-member-account-role.yml`](cloudformation/guardduty-member-account-role.yml)
+   CloudFormation template in your member AWS accounts. This CloudFormation template should only be deployed once in a single
+   region in each member AWS account. The account will then register with the master account and go through the invitation
+   process automatically for every region.
 
-Paroxython starts from a given folder of **programs**. Its contents is parsed, and all features that meet the provided **specifications** are labelled and associated with their spans (e.g., `"assignment_lhs_identifier:a": 4, 6, 18` or `"loop_with_late_exit:while": 3-7, 20-29`).
+## AWS re:invent 2018 SEC403 Presentation
 
-These **labels** constitute only scattered knowledge. The next step is to map them onto a **taxonomy** designed with basic hierarchical constraints in mind (e.g., the fact that the introduction of the concept of early exit must come after that of loop, which itself requires that of control flow, is expressed by the _taxon_ `"flow/loop/exit/early"`).
+* [Watch our presentation on GuardDuty Multi Account Manager](https://www.youtube.com/watch?v=M5yQpegaYF8&t=1889) at AWS re:Invent 2018
+* [Read the slides](https://www.slideshare.net/AmazonWebServices/five-new-security-automations-using-aws-security-services-open-source-sec403-aws-reinvent-2018/47)
 
-<p align="center">
-  <a href="https://laowantong.github.io/paroxython/user_manual/index.html#taxonomy">
-  <img src="docs/resources/tree.png" alt="A taxonomy.">
-  </a>
-  <br>
-  <em>Extract of the taxonomy generated from <a href="https://github.com/TheAlgorithms/Python">The Algorithms - Python</a>.<br>Click to jump to its full dynamic version in the user manual.</em>
-</p>
+## License
 
-Everything is then persisted in a tag **database**, which can later be filtered through a **pipeline** of commands, for instance:
+guardduty-multi-account-manager is Licensed under the
+[Mozilla Public License 2.0 ( MPL2.0 )](https://www.mozilla.org/en-US/MPL/2.0/)
 
-- _include_ only the programs which feature a recursive function;
-- _exclude_ this or that program you want to set aside for the exam;
-- “_impart_” all programs studied so far, _i.e_, consider that all the notions they implement are acquired.
+## Contributors
 
-The result is a list of program **recommendations** ordered by increasing learning cost.
-
-### Example
-
-Suppose that the `programs` directory contains [these simple programs](https://wiki.python.org/moin/SimplePrograms).
-
-First, build [this tag database](https://github.com/laowantong/paroxython/blob/master/examples/simple/programs_db.json):
-
-```shell
-> paroxython collect programs
-Labelling 21 programs.
-Mapping taxonomy on 21 programs.
-Writing programs_db.json.
-```
-
-Then, filter it through [this pipeline](https://github.com/laowantong/paroxython/blob/master/examples/simple/programs_pipe.py):
-
-```shell
-> paroxython recommend programs
-Processing 5 commands on 21 programs.
-  19 programs remaining after operation 1 (impart).
-  18 programs remaining after operation 2 (exclude).
-  12 programs remaining after operation 3 (exclude).
-  10 programs remaining after operation 4 (include).
-  10 programs remaining after operation 5 (hide).
-Dumped: programs_recommendations.md.
-```
-
-Et voilà, [your recommendation report](https://github.com/laowantong/paroxython/blob/master/examples/simple/programs_recommendations.md)!
-
-
-## Installation and test-drive
-
-### Command line
-
-Much to no one's surprise:
-
-```
-python -m pip install paroxython
-```
-
-The following command should print a help message and exit:
-
-```
-paroxython --help
-```
-
-### IPython magic command
-
-If you use Jupyter notebook/lab, you've also just installed a so-called magic command. Load it like this:
-
-```python
-%load_ext paroxython
-```
-
-This should print `"paroxython 0.7.0 loaded."`. Run it on a cell of Python code:
-
-```python
-%%paroxython                          # Lines
-def fibonacci(n):                     # 2
-    result = []                       # 3
-    (a, b) = (0, 1)                   # 4
-    while a < n:                      # 5
-        result.append(a)              # 6
-        (a, b) = (b, a + b)           # 7
-    return result                     # 8
-```
-
-| Taxon | Lines |
-|:--|:--|
-| `call/subroutine/method/sequence/list/append` | 6 |
-| `condition/inequality` | 5 |
-| `def/subroutine/function/impure` | 2-8 |
-| `def/subroutine/parameter/arg` | 2 |
-| `flow/loop/exit/late` | 5-7 |
-| `flow/loop/while` | 5-7 |
-| `meta/count/program/sloc/8` | 2-8 |
-| `meta/count/subroutine/sloc/7` | 2-8 |
-| `meta/count/variety/3` | 2-8 |
-| `meta/program` | 2-8 |
-| `operator/arithmetic/addition` | 7 |
-| `style/procedural` | 2-8 |
-| `type/number/integer/literal` | 4 |
-| `type/number/integer/literal/zero` | 4 |
-| `type/sequence/list` | 6 |
-| `type/sequence/list/literal/empty` | 3 |
-| `type/sequence/tuple/literal` | 4, 4, 7, 7 |
-| `var/assignment/explicit/parallel` | 4 |
-| `var/assignment/explicit/parallel/slide` | 7 |
-| `var/assignment/explicit/single` | 3 |
-| `var/assignment/implicit/parameter` | 2 |
-| `var/scope/local` | 2-8, 2-8, 2-8, 2-8 |
-
-As you can see, in this program, Paroxython identifies among others:
-
-- the use of the [procedural paradigm](https://en.wikipedia.org/wiki/Procedural_programming) (`style/procedural`);
-- an im[pure function](https://en.wikipedia.org/wiki/Pure_function) (`def/subroutine/function/impure`);
-- a `while` loop (`flow/loop/while`) with a late exit (`flow/loop/exit/late`);
-- a little bit of voodoo on lists (`type/sequence/list/literal/empty` and `call/subroutine/method/sequence/list/append`);
-- a simple [tuple assignment](https://en.wikibooks.org/wiki/Python_Programming/Tuples#Packing_and_Unpacking) (`var/assignment/explicit/parallel`). Note that we distinguish between explicit (with `=`) and implicit (parameters and iteration variables) assignments;
-- a “sliding” tuple assignment (`var/assignment/explicit/parallel/slide`). If the denomination is unique to us, the pattern itself occurs in a number of programs: implementations of [C-finite sequences](https://en.wikipedia.org/wiki/Constant-recursive_sequence) with C greater than 1, [Greatest Common Divisor](https://en.wikipedia.org/wiki/Greatest_common_divisor), [Quicksort](https://en.wikipedia.org/wiki/Quicksort), etc.
-- four local variables (`var/scope/local`);
-- an estimation of the variety of concepts involved (`meta/count/variety/***`), depending on the number of lines, features and distinct features.
-
-The magic command `%%paroxython` (corresponding to the subcommand [`tag`](https://laowantong.github.io/paroxython/cli_tag.html)) only scratches the surface of the system. As shown before, to estimate the learning cost of the features and get actionable recommendations, you will need first to construct the tag database with [`collect`](https://laowantong.github.io/paroxython/cli_collect.html), and then call [`recommend`](https://laowantong.github.io/paroxython/cli_recommend.html) on a pipeline of yours.
-
-# Read them
-
-Although this is still a work-in-progress, Paroxython should already be fairly well [documented](https://laowantong.github.io/paroxython/index.html):
-
-- [User manual](https://laowantong.github.io/paroxython/user_manual/index.html):
-  - [write a command pipeline to get recommendations](https://laowantong.github.io/paroxython/user_manual/index.html#pipeline-tutorial),
-  - [prepare your program collections for better results](https://laowantong.github.io/paroxython/user_manual/index#preparing-your-program-collection),
-  - [understand and modify the taxonomic classification](https://laowantong.github.io/paroxython/user_manual/index#taxonomy),
-  - and more.
-- [Developer manual](https://laowantong.github.io/paroxython/developer_manual/index.html):
-  - [get a rough idea of the program structure and operations](https://laowantong.github.io/paroxython/developer_manual/index.html#bird-view),
-  - [use the provided helpers to contribute to the code](helper-programs),
-  - and more.
-- [Module reference](https://laowantong.github.io/paroxython/#header-submodules).
-- [Feature specifications](https://github.com/laowantong/paroxython/blob/master/paroxython/resources/spec.md): a document mixing prose, tests, regular expressions and SQL queries to describe which algorithmic features are recognized and how.
-- [User types](https://github.com/laowantong/paroxython/blob/master/paroxython/user_types.py): all objects of interest are precisely typed and checked by [mypy](http://mypy-lang.org).
-
-Finally, a [battery of examples](https://github.com/laowantong/paroxython/tree/master/examples) and [comprehensive test coverage](https://github.com/laowantong/paroxython/tree/master/tests) should help answer any remaining question.
+* [Gene Wood](https://github.com/gene1wood/)
+* [Andrew Krug](https://github.com/andrewkrug/)
