@@ -1,31 +1,31 @@
-*.bak
-*.egg-info/
-*.log
+.coveralls.yml
+docs/_build/**
+_build/**
+cover
+.coverage
+neat-checkpoint-*
+fitness_history.csv
+speciation.csv
+species_fitness.csv
+.mypy_cache
+*~
 *.pyc
 *.pyo
-*.tmp
-
-.DS_Store
-.coverage
-.coverage.*
-.done.*
-
-.eggs/
-.idea/
-.pytest_cache/
-.tox/
-.venv*/
-.settings/
-
-build/
-dist/
-downloads/
-
-__pypackages__/
 __pycache__/
-**/__pycache__/
+*stats*.dat*
 
-# -- OWN WORKSPACE: Directory(s), File(s)
-__*/
-__*.txt
+# pycharm cache folder
+.idea/
 
+examples/openai-lander/results/
+examples/openai-walker/results/
+examples/picture2d/*.bin
+examples/picture2d/*.png
+examples/picture2d/rendered/
+venv
+
+*.gv
+*.svg
+build
+dist
+neat_python.egg-info
